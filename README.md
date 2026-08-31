@@ -1,0 +1,2 @@
+# smartInfrastructure
+Contenedores docker
