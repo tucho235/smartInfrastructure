@@ -19,6 +19,19 @@ datasources:
       version: InfluxQL
       httpMode: GET
 
+  # UID histórico usado por el dashboard tuya-energia-v1.
+  - name: InfluxDB Tuya Legacy
+    uid: P951FEA4DE68E13C5
+    type: influxdb
+    access: proxy
+    url: http://influxdb:8086
+    database: ${INFLUXDB_ENERGY_DB}
+    isDefault: false
+    editable: true
+    jsonData:
+      version: InfluxQL
+      httpMode: GET
+
   - name: InfluxDB Environment
     uid: environment-influxdb
     type: influxdb
