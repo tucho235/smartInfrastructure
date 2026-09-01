@@ -6,6 +6,10 @@ Infraestructura central para `smartEnergy` y `smartEnvironmentSensor`.
 - Telegraf transforma los JSON y escribe en InfluxDB 1.8.
 - Grafana consulta las bases `tuya` y `smart_environment`.
 
+Los dashboards y datasources versionados del sistema viven bajo
+`grafana/provisioning/`; los repositorios de medición no mantienen copias
+locales de esta configuración.
+
 ## Estado y migración
 
 Esta composición consolida los servicios que ya estaban desplegados:
