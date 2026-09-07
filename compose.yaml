@@ -6,10 +6,10 @@ services:
     ports:
       - "${MQTT_PORT:-1883}:1883"
     volumes:
-      - /opt/stacks/mqtt/data:/mosquitto/data
-      - /opt/stacks/mqtt/log:/mosquitto/log
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
       - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
-      - ${MQTT_PASSWORD_FILE:-/opt/stacks/mqtt/config/passwd}:/mosquitto/config/passwd:ro
+      - ${MQTT_PASSWORD_FILE:-./mosquitto/config/passwd}:/mosquitto/config/passwd:ro
 
   influxdb:
     image: influxdb:1.8

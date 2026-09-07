@@ -10,42 +10,44 @@ Los dashboards y datasources versionados del sistema viven bajo
 `grafana/provisioning/`; los repositorios de medición no mantienen copias
 locales de esta configuración.
 
-## Estado y migración
+## Estado del despliegue
 
-Esta composición consolida los servicios que ya estaban desplegados:
+Esta composición es el despliegue activo y consolida los servicios de
+`smartEnergy` y `smartEnvironmentSensor`:
 
 | Servicio | Contenedor actual | Persistencia actual |
 |---|---|---|
-| Mosquitto | `mosquitto` | `/opt/stacks/mqtt/{config,data,log}` |
-| Telegraf | `smart-env-telegraf` | configuración en `/opt/stacks/telegraf-mqtt-to-influx` |
+| Mosquitto | `mosquitto` | `./mosquitto/{config,data,log}` |
+| Telegraf | `smart-env-telegraf` | `./telegraf/telegraf.conf` y `.env` local |
 | InfluxDB 1.8 | `influxdb` | volumen `tucho235_influxdb_data` |
 | Grafana | `grafana` | volumen `tucho235_grafana_data` |
 
 Los volúmenes de InfluxDB y Grafana están declarados como `external`, por lo
 que no se crean volúmenes vacíos ni se pierden los históricos.
 
+Los directorios antiguos de `/opt/stacks/mqtt` y
+`/opt/stacks/telegraf-mqtt-to-influx` se conservaron temporalmente como backup
+de rollback y ya no son montajes de los contenedores activos. No borrar esos
+directorios hasta completar la verificación final.
+
 Se generó un backup local en
 `backups/20260901-111728/`. El archivo recomendado para InfluxDB es
 `influxdb-portable.tgz`; `SHA256SUMS` contiene la verificación de integridad.
 
-Antes de iniciar esta composición, detener los proyectos actuales porque usan
-los mismos nombres de contenedor y puertos:
+Para desplegar esta composición en otro host:
 
 ```bash
 cp .env.example .env
 # Completar MQTT_PASSWORD y GRAFANA_ADMIN_PASSWORD.
 sudo docker compose --env-file .env config --quiet
 
-sudo docker compose -f /opt/stacks/telegraf-mqtt-to-influx/docker-compose.yml down
-sudo docker compose -f /opt/stacks/mqtt/docker-compose.yml down
-sudo docker compose -f /home/tucho235/docker-compose.yml down
 sudo docker compose --env-file .env up -d
 ```
 
 En este equipo `sudo` también es necesario para consultar o administrar Docker
-(`sudo docker ps`, `sudo docker compose ...`). Los archivos bajo `/opt/stacks`
-son propiedad de otro usuario del sistema; no cambiar sus permisos como parte
-de esta migración.
+(`sudo docker ps`, `sudo docker compose ...`). Los stacks independientes de
+`/opt/stacks/hass`, `/opt/stacks/immich`, `/opt/stacks/openwebui` y cualquier
+otro stack ajeno a este proyecto no deben detenerse durante esta operación.
 
 No usar `docker compose down -v` durante la migración. Hacer una copia de
 seguridad de los volúmenes antes de cambiar el despliegue.

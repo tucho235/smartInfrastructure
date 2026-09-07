@@ -1,3 +1,6 @@
 .env
 .DS_Store
 backups/
+mosquitto/config/passwd
+mosquitto/data/*
+mosquitto/log/*
