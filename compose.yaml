@@ -36,7 +36,8 @@ services:
       MQTT_SERVER: tcp://mosquitto:1883
       MQTT_USERNAME: ${MQTT_USERNAME:-esp32}
       MQTT_PASSWORD: ${MQTT_PASSWORD:?Set MQTT_PASSWORD in .env}
-      MQTT_ENV_TOPIC: ${MQTT_ENV_TOPIC:-smart-environment-sensor/#}
+      MQTT_ENV_TOPIC: ${MQTT_ENV_TOPIC:-smart-environment-sensor/bme680/state}
+      MQTT_ENV_OUTDOOR_TOPIC: ${MQTT_ENV_OUTDOOR_TOPIC:-smart-environment-sensor/outdoor/state}
       MQTT_ENERGY_TOPIC: ${MQTT_ENERGY_TOPIC:-smart-energy/tuya/energia}
 
       INFLUXDB_NETWORK_DB: ${INFLUXDB_NETWORK_DB:-network}

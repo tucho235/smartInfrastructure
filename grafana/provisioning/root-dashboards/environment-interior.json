@@ -1,0 +1,71 @@
+{
+  "uid": "addl8nn",
+  "title": "Monitor Ambiental Interior",
+  "tags": ["bme680", "environment", "temperature", "humidity", "preassure"],
+  "timezone": "browser",
+  "schemaVersion": 42,
+  "refresh": "10s",
+  "time": {"from": "now-6h", "to": "now"},
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Temperatura",
+      "gridPos": {"x": 0, "y": 0, "w": 8, "h": 5},
+      "datasource": {"type": "influxdb", "uid": "environment-influxdb"},
+      "targets": [{"refId": "A", "query": "SELECT last(\"temperature_c\") FROM \"environment\" WHERE $timeFilter", "rawQuery": true, "resultFormat": "time_series"}],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "colorMode": "background", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "textMode": "auto", "wideLayout": true},
+      "fieldConfig": {"defaults": {"unit": "celsius", "decimals": 1, "thresholds": {"mode": "absolute", "steps": [{"value": 0, "color": "green"}, {"value": 80, "color": "red"}]}}, "overrides": []}
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Humedad",
+      "gridPos": {"x": 8, "y": 0, "w": 8, "h": 5},
+      "datasource": {"type": "influxdb", "uid": "environment-influxdb"},
+      "targets": [{"refId": "A", "query": "SELECT last(\"humidity_percent\") FROM \"environment\" WHERE $timeFilter", "rawQuery": true, "resultFormat": "time_series"}],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "colorMode": "background", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "textMode": "auto", "wideLayout": true},
+      "fieldConfig": {"defaults": {"unit": "percent", "decimals": 1, "min": 0, "max": 100, "thresholds": {"mode": "absolute", "steps": [{"value": 0, "color": "green"}, {"value": 80, "color": "red"}]}}, "overrides": []}
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Presión",
+      "gridPos": {"x": 16, "y": 0, "w": 8, "h": 5},
+      "datasource": {"type": "influxdb", "uid": "environment-influxdb"},
+      "targets": [{"refId": "A", "query": "SELECT last(\"pressure_hpa\") FROM \"environment\" WHERE $timeFilter", "rawQuery": true, "resultFormat": "time_series"}],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "colorMode": "background", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "textMode": "auto", "wideLayout": true},
+      "fieldConfig": {"defaults": {"unit": "pressurehpa", "decimals": 1, "thresholds": {"mode": "absolute", "steps": [{"value": 0, "color": "green"}, {"value": 80, "color": "red"}]}}, "overrides": []}
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Temperatura",
+      "gridPos": {"x": 0, "y": 5, "w": 24, "h": 12},
+      "datasource": {"type": "influxdb", "uid": "environment-influxdb"},
+      "targets": [{"refId": "A", "query": "SELECT mean(\"temperature_c\") FROM \"environment\" WHERE $timeFilter GROUP BY time($__interval) fill(null)", "rawQuery": true, "alias": "Temperatura (°C)", "resultFormat": "time_series"}],
+      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"drawStyle": "line", "fillOpacity": 8, "lineInterpolation": "smooth", "lineWidth": 2, "showPoints": "auto", "spanNulls": true}}, "overrides": []},
+      "options": {"tooltip": {"mode": "multi", "sort": "none"}, "legend": {"displayMode": "list", "placement": "bottom", "showLegend": true}}
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "Humedad",
+      "gridPos": {"x": 0, "y": 17, "w": 24, "h": 12},
+      "datasource": {"type": "influxdb", "uid": "environment-influxdb"},
+      "targets": [{"refId": "B", "query": "SELECT mean(\"humidity_percent\") FROM \"environment\" WHERE $timeFilter GROUP BY time($__interval) fill(null)", "rawQuery": true, "alias": "Humedad (%)", "resultFormat": "time_series"}],
+      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"drawStyle": "line", "fillOpacity": 8, "lineInterpolation": "smooth", "lineWidth": 2, "showPoints": "auto", "spanNulls": true}}, "overrides": []},
+      "options": {"tooltip": {"mode": "multi", "sort": "none"}, "legend": {"displayMode": "list", "placement": "bottom", "showLegend": true}}
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "Presión atmosférica",
+      "gridPos": {"x": 0, "y": 29, "w": 24, "h": 12},
+      "datasource": {"type": "influxdb", "uid": "environment-influxdb"},
+      "targets": [{"refId": "C", "query": "SELECT mean(\"pressure_hpa\") FROM \"environment\" WHERE $timeFilter GROUP BY time($__interval) fill(null)", "rawQuery": true, "alias": "Presión (hPa)", "resultFormat": "time_series"}],
+      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"drawStyle": "line", "fillOpacity": 8, "lineInterpolation": "smooth", "lineWidth": 2, "showPoints": "auto", "spanNulls": true}}, "overrides": []},
+      "options": {"tooltip": {"mode": "multi", "sort": "none"}, "legend": {"displayMode": "list", "placement": "bottom", "showLegend": true}}
+    }
+  ]
+}

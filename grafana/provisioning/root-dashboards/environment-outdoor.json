@@ -1,0 +1,95 @@
+{
+  "uid": "environment-outdoor-v1",
+  "title": "Monitor Ambiental Exterior",
+  "tags": ["environment", "outdoor"],
+  "timezone": "browser",
+  "schemaVersion": 38,
+  "refresh": "10s",
+  "time": {"from": "now-6h", "to": "now"},
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Temperatura",
+      "gridPos": {"x": 0, "y": 0, "w": 12, "h": 5},
+      "datasource": {"type": "influxdb", "uid": "environment-influxdb"},
+      "targets": [
+        {
+          "refId": "A",
+          "query": "SELECT last(\"temperature_c\") FROM \"environment_outdoor\" WHERE $timeFilter",
+          "rawQuery": true,
+          "resultFormat": "time_series"
+        }
+      ],
+      "options": {
+        "reduceOptions": {"calcs": ["lastNotNull"]},
+        "colorMode": "background",
+        "graphMode": "area"
+      },
+      "fieldConfig": {"defaults": {"unit": "celsius", "decimals": 1}}
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Humedad",
+      "gridPos": {"x": 12, "y": 0, "w": 12, "h": 5},
+      "datasource": {"type": "influxdb", "uid": "environment-influxdb"},
+      "targets": [
+        {
+          "refId": "A",
+          "query": "SELECT last(\"humidity_percent\") FROM \"environment_outdoor\" WHERE $timeFilter",
+          "rawQuery": true,
+          "resultFormat": "time_series"
+        }
+      ],
+      "options": {
+        "reduceOptions": {"calcs": ["lastNotNull"]},
+        "colorMode": "background",
+        "graphMode": "area"
+      },
+      "fieldConfig": {"defaults": {"unit": "percent", "decimals": 1}}
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "Temperatura",
+      "gridPos": {"x": 0, "y": 5, "w": 24, "h": 12},
+      "datasource": {"type": "influxdb", "uid": "environment-influxdb"},
+      "targets": [
+        {
+          "refId": "A",
+          "query": "SELECT mean(\"temperature_c\") FROM \"environment_outdoor\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+          "rawQuery": true,
+          "alias": "Temperatura (°C)",
+          "resultFormat": "time_series"
+        }
+      ],
+      "fieldConfig": {"defaults": {"custom": {"lineWidth": 2, "fillOpacity": 8}}},
+      "options": {
+        "tooltip": {"mode": "multi"},
+        "legend": {"displayMode": "list", "placement": "bottom"}
+      }
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "Humedad",
+      "gridPos": {"x": 0, "y": 17, "w": 24, "h": 12},
+      "datasource": {"type": "influxdb", "uid": "environment-influxdb"},
+      "targets": [
+        {
+          "refId": "A",
+          "query": "SELECT mean(\"humidity_percent\") FROM \"environment_outdoor\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+          "rawQuery": true,
+          "alias": "Humedad (%)",
+          "resultFormat": "time_series"
+        }
+      ],
+      "fieldConfig": {"defaults": {"custom": {"lineWidth": 2, "fillOpacity": 8}}},
+      "options": {
+        "tooltip": {"mode": "multi"},
+        "legend": {"displayMode": "list", "placement": "bottom"}
+      }
+    }
+  ]
+}
