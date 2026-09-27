@@ -21,6 +21,8 @@ Esta composición es el despliegue activo y consolida los servicios de
 | Telegraf | `smart-env-telegraf` | `./telegraf/telegraf.conf` y `.env` local |
 | InfluxDB 1.8 | `influxdb` | volumen `tucho235_influxdb_data` |
 | Grafana | `grafana` | volumen `tucho235_grafana_data` |
+| Matterbridge | `matterbridge` | `./matterbridge/{Matterbridge,.matterbridge,.mattercert}` |
+| Adaptador Matterbridge | `matterbridge-adapter` | sin estado persistente |
 
 Los volúmenes de InfluxDB y Grafana están declarados como `external`, por lo
 que no se crean volúmenes vacíos ni se pierden los históricos.
@@ -98,6 +100,72 @@ smart-environment-sensor/bme680/state
 
 Telegraf guarda energía en la medición `energia` de `tuya`, y ambiente en la
 medición `environment` de `smart_environment`.
+
+## Matterbridge
+
+Matterbridge expone dispositivos virtuales Matter a partir de dispositivos
+MQTT mediante el plugin oficial `matterbridge-mqtt`. Usa el modo de red del
+host porque Matter necesita mDNS y conectividad IPv6 local.
+
+El contenedor se administra desde esta composición, pero el primer ajuste del
+plugin se realiza en la interfaz web de Matterbridge:
+
+```text
+http://<IP_DEL_HOST>:8283
+```
+
+Instalar o activar `matterbridge-mqtt` y configurar:
+
+```text
+Broker: mqtt://localhost
+Puerto: 1883
+Usuario: el valor de MQTT_USERNAME en .env
+Contraseña: el valor de MQTT_PASSWORD en .env
+Prefijo: matterbridge
+```
+
+El archivo de ejemplo está en
+`matterbridge/matterbridge-mqtt.config.example.json`; no contiene secretos y
+se puede usar como referencia. La configuración efectiva queda en
+`matterbridge/.matterbridge/` y está excluida de Git.
+
+Para crear el dispositivo eléctrico de `smartEnergy`, el plugin debe recibir
+mensajes MQTT retenidos de configuración y estado bajo el prefijo configurado.
+El tópico actual `smart-energy/tuya/energia` contiene los datos de origen, pero
+no tiene por sí solo el formato de control de Matterbridge. El mapeo
+es:
+
+```text
+voltaje_V   -> ElectricalPowerMeasurement.voltage (mV)
+corriente_A -> ElectricalPowerMeasurement.activeCurrent (mA)
+potencia_W  -> ElectricalPowerMeasurement.activePower (mW)
+energia_kWh -> ElectricalEnergyMeasurement.cumulativeEnergyImported (mWh)
+```
+
+Para mejorar la compatibilidad con SmartThings, el adaptador presenta un único
+endpoint Matter con los tipos `OnOffPlugInUnit` y `ElectricalSensor`. El estado
+`OnOff` se mantiene encendido de forma virtual: representa un medidor y no
+controla físicamente el suministro eléctrico. El endpoint usa `PowerTopology`
+con la feature `NodeTopology`, porque sus valores representan el consumo total
+del hogar y no el consumo de un endpoint hijo. La extensión localizada
+`matterbridge/node-topology-register.mjs` corrige el valor `TreeTopology` que el
+plugin MQTT crea por defecto, únicamente para el dispositivo `smart-energy`.
+SmartThings debería exponer la potencia y la energía acumulada como capacidades
+del enchufe. La tensión y la corriente permanecen en los atributos Matter
+estándar, aunque la interfaz actual de SmartThings puede no mostrarlas.
+
+El televisor y otros dispositivos registrados por separado en SmartThings no
+son hijos Matter de este medidor. Su consumo físico ya forma parte del total,
+pero SmartThings no deduce ni resta automáticamente esos consumos individuales.
+
+El dispositivo Matterbridge se empareja con el hub Matter de forma
+independiente de `smartEnvironmentSensor`; una caída de Matterbridge no
+interrumpe MQTT, InfluxDB, Grafana ni el dispositivo ESP32.
+
+El adaptador `matterbridge-adapter` transforma el JSON de
+`smart-energy/tuya/energia` en mensajes MQTT retenidos bajo el prefijo
+`matterbridge/`. Publica un enchufe medidor virtual que combina los clusters
+estándar `ElectricalPowerMeasurement` y `ElectricalEnergyMeasurement`.
 
 ## Operación
 

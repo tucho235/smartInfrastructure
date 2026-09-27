@@ -38,6 +38,11 @@ services:
       MQTT_PASSWORD: ${MQTT_PASSWORD:?Set MQTT_PASSWORD in .env}
       MQTT_ENV_TOPIC: ${MQTT_ENV_TOPIC:-smart-environment-sensor/#}
       MQTT_ENERGY_TOPIC: ${MQTT_ENERGY_TOPIC:-smart-energy/tuya/energia}
+
+      INFLUXDB_NETWORK_DB: ${INFLUXDB_NETWORK_DB:-network}
+      MQTT_MIKROTIK_TOPIC: ${MQTT_MIKROTIK_TOPIC:-mikrotik/router/wan}
+      MQTT_MIKROTIK_USER: ${MQTT_MIKROTIK_USER:-mikrotik}
+      MQTT_MIKROTIK_PASSWORD: ${MQTT_MIKROTIK_PASSWORD:?Set MQTT_MIKROTIK_PASSWORD in .env}
     volumes:
       - ./telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro
 
@@ -54,9 +59,42 @@ services:
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
       INFLUXDB_ENERGY_DB: ${INFLUXDB_ENERGY_DB:-tuya}
       INFLUXDB_ENV_DB: ${INFLUXDB_ENV_DB:-smart_environment}
+      INFLUXDB_NETWORK_DB: ${INFLUXDB_NETWORK_DB:-network}
     volumes:
       - grafana_data:/var/lib/grafana
       - ./grafana/provisioning:/etc/grafana/provisioning:ro
+
+  matterbridge:
+    image: luligu/matterbridge:latest
+    container_name: matterbridge
+    depends_on:
+      - mosquitto
+    network_mode: host
+    restart: unless-stopped
+    stop_grace_period: 60s
+    environment:
+      NODE_OPTIONS: --import=/opt/matterbridge/node-topology-register.mjs
+      MATTERBRIDGE_NODE_TOPOLOGY_DEVICE_ID: smart-energy
+    volumes:
+      - ./matterbridge/Matterbridge:/root/Matterbridge
+      - ./matterbridge/.matterbridge:/root/.matterbridge
+      - ./matterbridge/.mattercert:/root/.mattercert
+      - ./matterbridge/node-topology-register.mjs:/opt/matterbridge/node-topology-register.mjs:ro
+
+  matterbridge-adapter:
+    build: ./matterbridge-adapter
+    container_name: matterbridge-adapter
+    restart: unless-stopped
+    depends_on:
+      - mosquitto
+    environment:
+      MQTT_HOST: mosquitto
+      MQTT_PORT: 1883
+      MQTT_USERNAME: ${MQTT_USERNAME:-esp32}
+      MQTT_PASSWORD: ${MQTT_PASSWORD:?Set MQTT_PASSWORD in .env}
+      MQTT_SOURCE_TOPIC: ${MQTT_ENERGY_TOPIC:-smart-energy/tuya/energia}
+      MATTERBRIDGE_TOPIC: matterbridge
+      MATTERBRIDGE_DEVICE_ID: smart-energy
 
 volumes:
   influxdb_data:

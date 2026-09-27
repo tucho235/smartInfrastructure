@@ -43,3 +43,15 @@ datasources:
     jsonData:
       version: InfluxQL
       httpMode: GET
+
+  - name: InfluxDB Network
+    uid: network-influxdb
+    type: influxdb
+    access: proxy
+    url: http://influxdb:8086
+    database: ${INFLUXDB_NETWORK_DB}
+    isDefault: false
+    editable: true
+    jsonData:
+      version: InfluxQL
+      httpMode: GET

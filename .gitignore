@@ -4,3 +4,7 @@ backups/
 mosquitto/config/passwd
 mosquitto/data/*
 mosquitto/log/*
+matterbridge/Matterbridge/*
+matterbridge/.matterbridge/*
+matterbridge/.mattercert/*
+matterbridge-adapter/__pycache__/
